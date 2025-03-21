@@ -14,6 +14,7 @@ import { CoachingExpert } from "@/services/options";
 import { useMutation } from "convex/react";
 import { Loader, LoaderCircle } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 function UserInputDialog({ children, coachingOptions }) {
@@ -22,6 +23,7 @@ function UserInputDialog({ children, coachingOptions }) {
   const createDiscussionRoom = useMutation(api.DiscussionRoom.CreateNewRoom)
   const [loading,setLoading] =  useState(false)
   const [openDialog,setOpenDialog] = useState(false)
+  const router = useRouter();
 
   const OnClickNext=async()=>{
     setLoading(true)
@@ -33,6 +35,7 @@ function UserInputDialog({ children, coachingOptions }) {
     console.log(result)
     setLoading(false)
     setOpenDialog(false)
+    router.push('/discussion-room/'+result)
   }
 
   return (
