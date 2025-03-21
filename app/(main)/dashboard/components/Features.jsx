@@ -5,6 +5,7 @@ import { useUser } from "@stackframe/stack";
 import React from "react";
 import Image from "next/image";
 import { BlurFade } from "@/components/magicui/blur-fade";
+import UserInputDialog from "./UserInputDialog";
 
 function Features() {
   const user = useUser();
@@ -24,19 +25,21 @@ function Features() {
       <div className="grid grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-5 mt-10">
         {CoachingOptions.map((options, index) => (
           <BlurFade key={options.icon} delay={0.25 + index * 0.05} inView>
-          <div
-            key={index}
-            className="p-3 bg-secondary rounded-3xl flex flex-xol justify-center items-center"
-          >
-            <Image
-              src={options.icon}
-              alt={options.name}
-              width={150}
-              height={150}
-              className="h-[70px] w-[70px] hover:rotate-12 cursor-pointer mr-3 transition-all"
-            />
-            <h2 className="mt-2 ">{options.name}</h2>
-          </div>
+            <UserInputDialog coachingOptions={options}>
+              <div
+                key={index}
+                className="p-3 bg-secondary rounded-3xl flex justify-center items-center"
+              >
+                <Image
+                  src={options.icon}
+                  alt={options.name}
+                  width={150}
+                  height={150}
+                  className="h-[70px] w-[70px] hover:rotate-12 cursor-pointer mr-2 transition-all"
+                />
+                <h2 className="mt-2 ">{options.name}</h2>
+              </div>
+            </UserInputDialog>
           </BlurFade>
         ))}
       </div>
