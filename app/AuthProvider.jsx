@@ -19,7 +19,6 @@ function AuthProvider({ children }) {
       name: user?.displayName,
       email: user.primaryEmail,
     });
-    console.log(result);
     setUserData(result)
   };
 
