@@ -4,10 +4,11 @@ import { api } from "@/convex/_generated/api";
 import { CoachingExpert } from "@/services/options";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
+
 
 function DiscussionRoom() {
   const { roomid } = useParams();
@@ -15,6 +16,10 @@ function DiscussionRoom() {
     id: roomid,
   });
   const [expert, setExpert] = useState();
+  const [enableMic, setEnableMic] = useState();
+  const realtimeTranscriber = useRef(null)
+  const recorder = useRef(null);
+  let silenceTimeout;
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -26,6 +31,50 @@ function DiscussionRoom() {
     }
   }, [DiscussionRoomData]);
 
+  const connectToServer = async() => {
+    setEnableMic(true)
+
+    realtimeTranscriber
+
+    if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+      const RecordRTC = (await import("recordrtc")).default; 
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          recorder.current = new RecordRTC(stream, {
+            type: "audio",
+            mimeType: "audio/webm;codecs=pcm",
+            recorderType: RecordRTC.StereoAudioRecorder,
+            timeSlice: 250,
+            desiredSampRate: 16000,
+            numberOfAudioChannels: 1,
+            bufferSize: 4096,
+            audioBitsPerSecond: 128000,
+            ondataavailable: async (blob) => {
+              clearTimeout(silenceTimeout);
+              const buffer = await blob.arrayBuffer();
+              console.log(buffer)
+              silenceTimeout = setTimeout(() => {
+                console.log("User stopped talking");
+              }, 2000);
+            },
+          });
+
+          recorder.current.startRecording();
+          setEnableMic(true);
+        })
+        .catch((err) => console.error(err));
+    }
+  };
+
+  const disconnect = (e) => {
+    e.preventDefault()
+    
+    recorder.current.pauseRecording()
+    recorder.current=null
+    setEnableMic(false)
+  };
+
   return (
     <div className="text-lg font-bold -mt-12">
       <h2>{DiscussionRoomData?.coachingOption}</h2>
@@ -33,7 +82,7 @@ function DiscussionRoom() {
         <div className="lg:col-span-2">
           <div className=" h-[60vh] bg-secondary border rounded-4xl flex flex-col items-center justify-center relative">
             <Image
-              src={expert?.avatar}
+              src={expert?.avatar || "/t2.jpg"}
               alt="Avatar"
               width={200}
               height={200}
@@ -41,19 +90,26 @@ function DiscussionRoom() {
             />
             <h2 className="text-gray-500">{expert?.name}</h2>
             <div className="p-5 bg-gray-200 px-10 rounded-lg absolute bottom-10 right-10">
-              <UserButton/>
+              <UserButton />
             </div>
           </div>
           <div className="mt-5 flex justify-center items-center">
-            <Button>Connect</Button>
+            {!enableMic ? (
+              <Button onClick={connectToServer}>Connect</Button>
+            ) : (
+              <Button onClick={disconnect} variant="destructive">Disconnect</Button>
+            )}
           </div>
         </div>
         <div>
           <div className="h-[60vh] bg-secondary border rounded-4xl flex flex-col items-center justify-center relative">
-              <h2>Chat Section</h2>
+            <h2>Chat Section</h2>
           </div>
           <div>
-            <h2 className="mt-5 text-gray-400 text-sm">At the end of your conversation we will automatically generate feedback/notes from your conversation</h2>
+            <h2 className="mt-5 text-gray-400 text-sm">
+              At the end of your conversation we will automatically generate
+              feedback/notes from your conversation
+            </h2>
           </div>
         </div>
       </div>

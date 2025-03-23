@@ -19,7 +19,7 @@ export const CreateNewRoom = mutation({
     }
   });
 export const GetDiscussionRoom=query({
-  args:{
+  args: {
     id:v.id('DiscussionRoom')
   },
   handler:async(ctx,args)=>{
