@@ -8,7 +8,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
-
+import { RealtimeTranscriber } from "assemblyai";
+import { getToken } from "@/services/GlobalServices";
 
 function DiscussionRoom() {
   const { roomid } = useParams();
@@ -17,9 +18,12 @@ function DiscussionRoom() {
   });
   const [expert, setExpert] = useState();
   const [enableMic, setEnableMic] = useState();
-  const realtimeTranscriber = useRef(null)
+  const realtimeTranscriber = useRef(null);
   const recorder = useRef(null);
+  const [transcribe, setTranscribe] = useState()
+  const [conversation, setConversation] = useState([]);
   let silenceTimeout;
+  let texts ={}
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -31,13 +35,42 @@ function DiscussionRoom() {
     }
   }, [DiscussionRoomData]);
 
-  const connectToServer = async() => {
-    setEnableMic(true)
+  const connectToServer = async () => {
+    setEnableMic(true);
 
-    realtimeTranscriber
+    //AssemblyAI
+    realtimeTranscriber.current = new RealtimeTranscriber({
+      token:await getToken(),
+      sample_rate:16_000
+    });
 
+    realtimeTranscriber.current.on('transcript', async (transcript) => {
+      let msg = ''
+      if (transcript.message_type == 'FinalTranscript') {
+          setConversation(prev => [...prev, {
+              role: 'user',
+              content: transcript.text
+          }]);
+          // await updateUserTokenMathod(transcript.text);
+      }
+
+      texts[transcript.audio_start] = transcript?.text;
+      const keys = Object.keys(texts);
+      keys.sort((a, b) => a - b);
+
+      for (const key of keys) {
+          if (texts[key]) {
+              msg += `${texts[key]}`
+          }
+      }
+
+      setTranscribe(msg);
+  })
+
+    await realtimeTranscriber.current.connect()
+    
     if (typeof window !== "undefined" && typeof navigator !== "undefined") {
-      const RecordRTC = (await import("recordrtc")).default; 
+      const RecordRTC = (await import("recordrtc")).default;
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
@@ -51,9 +84,11 @@ function DiscussionRoom() {
             bufferSize: 4096,
             audioBitsPerSecond: 128000,
             ondataavailable: async (blob) => {
+              if(!realtimeTranscriber.current) return
               clearTimeout(silenceTimeout);
               const buffer = await blob.arrayBuffer();
-              console.log(buffer)
+              console.log(buffer);
+              realtimeTranscriber.current.sendAudio(buffer);
               silenceTimeout = setTimeout(() => {
                 console.log("User stopped talking");
               }, 2000);
@@ -67,12 +102,12 @@ function DiscussionRoom() {
     }
   };
 
-  const disconnect = (e) => {
-    e.preventDefault()
-    
-    recorder.current.pauseRecording()
-    recorder.current=null
-    setEnableMic(false)
+  const disconnect = async(e) => {
+    e.preventDefault();
+    await realtimeTranscriber.current.close()
+    recorder.current.pauseRecording();
+    recorder.current = null;
+    setEnableMic(false);
   };
 
   return (
@@ -97,7 +132,9 @@ function DiscussionRoom() {
             {!enableMic ? (
               <Button onClick={connectToServer}>Connect</Button>
             ) : (
-              <Button onClick={disconnect} variant="destructive">Disconnect</Button>
+              <Button onClick={disconnect} variant="destructive">
+                Disconnect
+              </Button>
             )}
           </div>
         </div>
@@ -112,6 +149,9 @@ function DiscussionRoom() {
             </h2>
           </div>
         </div>
+      </div>
+      <div>
+        <h2>{transcribe}</h2>
       </div>
     </div>
   );
