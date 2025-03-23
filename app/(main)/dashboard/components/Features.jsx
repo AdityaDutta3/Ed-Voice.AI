@@ -11,33 +11,35 @@ function Features() {
   const user = useUser();
 
   return (
-    <div>
+    <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-lg">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="font-medium text-gray-500">My Workspace</h2>
-          <h2 className="font-bold text-2xl">
-            Welcome back,{user?.displayName}{" "}
+          <h2 className="font-medium text-gray-500 dark:text-gray-400">My Workspace</h2>
+          <h2 className="font-bold text-2xl dark:text-white">
+            Welcome back, {user?.displayName}{" "}
           </h2>
         </div>
-        <Button>Profile</Button>
+        <Button className="bg-primary hover:bg-primary-dark text-white dark:bg-primary-dark dark:hover:bg-primary">
+          Profile
+        </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-5 mt-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-10">
         {CoachingOptions.map((options, index) => (
           <BlurFade key={options.icon} delay={0.25 + index * 0.05} inView>
             <UserInputDialog coachingOptions={options}>
               <div
                 key={index}
-                className="p-3 bg-secondary rounded-3xl flex justify-center items-center"
+                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md flex flex-col items-center justify-center hover:scale-105 transition-transform"
               >
                 <Image
                   src={options.icon}
                   alt={options.name}
                   width={150}
                   height={150}
-                  className="h-[70px] w-[70px] hover:rotate-12 cursor-pointer mr-2 transition-all"
+                  className="h-[70px] w-[70px] hover:rotate-12 cursor-pointer mb-4 transition-all"
                 />
-                <h2 className="mt-2 ">{options.name}</h2>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{options.name}</h2>
               </div>
             </UserInputDialog>
           </BlurFade>
