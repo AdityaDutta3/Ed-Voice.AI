@@ -9,7 +9,11 @@ import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
 import { RealtimeTranscriber } from "assemblyai";
-import { AIModel, ConvertTextToSpeech, getToken } from "@/services/GlobalServices";
+import {
+  AIModel,
+  ConvertTextToSpeech,
+  getToken,
+} from "@/services/GlobalServices";
 import { Loader2, Loader2Icon } from "lucide-react";
 import ChatBox from "./_components/ChatBox";
 import { UpdateConversation } from "@/convex/DiscussionRoom";
@@ -26,10 +30,11 @@ function DiscussionRoom() {
   const [transcribe, setTranscribe] = useState();
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [audioURL,setAudioURL] = useState()
+  const [audioURL, setAudioURL] = useState();
+  const [enableFeedbackNotes, setEnableFeedbackNotes] = useState(false);
   let silenceTimeout;
   let texts = {};
-  const UpdateConversation = useMutation(api.DiscussionRoom.UpdateConversation)
+  const UpdateConversation = useMutation(api.DiscussionRoom.UpdateConversation);
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -120,31 +125,35 @@ function DiscussionRoom() {
     setEnableMic(false);
 
     await UpdateConversation({
-      id:DiscussionRoomData._id,
-      conversation:conversation
-    })
+      id: DiscussionRoomData._id,
+      conversation: conversation,
+    });
     setLoading(false);
+    setEnableFeedbackNotes(true);
   };
 
-  useEffect(()=>{
-    async function fetchData(){
-      if(conversation[conversation.length-1]?.role == 'user'){
-          //Calling AI Model
-        const lastTwoMsg = conversation.slice(-8)
+  useEffect(() => {
+    async function fetchData() {
+      if (conversation[conversation.length - 1]?.role == "user") {
+        //Calling AI Model
+        const lastTwoMsg = conversation.slice(-8);
         const aiResp = await AIModel(
           DiscussionRoomData.topic,
           DiscussionRoomData.coachingOption,
           lastTwoMsg
         );
 
-        const url = await ConvertTextToSpeech(aiResp.content,DiscussionRoomData.expertName)
-        console.log(url)
-        setAudioURL(url)
+        const url = await ConvertTextToSpeech(
+          aiResp.content,
+          DiscussionRoomData.expertName
+        );
+        console.log(url);
+        setAudioURL(url);
         setConversation((prev) => [...prev, aiResp]);
       }
     }
-    fetchData()
-  },[conversation])
+    fetchData();
+  }, [conversation]);
 
   return (
     <div className="text-lg font-bold -mt-12">
@@ -160,7 +169,7 @@ function DiscussionRoom() {
               className="h-[80px] w-[80px] rounded-full object-cover animate-pulse"
             />
             <h2 className="text-gray-500">{expert?.name}</h2>
-            <audio src={audioURL} type="audio/mp3" autoPlay/>
+            <audio src={audioURL} type="audio/mp3" autoPlay />
             <div className="p-5 bg-gray-200 px-10 rounded-lg absolute bottom-10 right-10">
               <UserButton />
             </div>
@@ -182,12 +191,18 @@ function DiscussionRoom() {
           </div>
         </div>
         <div>
-          <ChatBox conversation={conversation} />
+          <ChatBox
+            conversation={conversation}
+            enableFeedbackNotes={enableFeedbackNotes}
+            coachingOption={DiscussionRoomData?.coachingOption}
+          />
         </div>
       </div>
       {transcribe && (
         <div>
-          <h2 className="p-4 border rounded-2xl mt-5 bg-gray-400">{transcribe.split(' ').slice(-20).join(' ')}</h2>
+          <h2 className="p-4 border rounded-2xl mt-5 bg-gray-400">
+            {transcribe.split(" ").slice(-20).join(" ")}
+          </h2>
         </div>
       )}
     </div>

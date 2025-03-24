@@ -39,3 +39,15 @@ export const UpdateConversation =  mutation({
     })
   }
 })
+
+export const UpdateSummery = mutation({
+  args: {
+      id: v.id('DiscussionRoom'),
+      summery: v.any()
+  },
+  handler: async (ctx, args) => {
+      await ctx.db.patch(args.id, {
+          summery: args.summery
+      })
+  }
+})
