@@ -18,13 +18,16 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.21.0",
+    "framer-motion": "^12.6.3",
     "lucide-react": "^0.483.0",
+    "moment": "^2.30.1",
     "motion": "^12.5.0",
     "next": "15.2.3",
     "openai": "^4.89.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-markdown": "^10.1.0",
+    "react-webcam": "^7.2.0",
     "recordrtc": "^5.5.1",
     "sonner": "^2.0.1",
     "sooner": "^1.1.4",
@@ -35,6 +38,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4.1.3"
   }
 }

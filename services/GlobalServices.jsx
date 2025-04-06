@@ -20,13 +20,13 @@ export const AIModel=async(topic,coachingOption,lastTwoMsg)=>{
     const option = CoachingOptions.find((item) => item.name == coachingOption)
     const PROMPT = (option.prompt).replace('{user_topic}', topic)
     const completion = await openai.chat.completions.create({
-        model: "google/gemini-2.0-pro-exp-02-05:free",
+        model: "openai/gpt-4o-mini",
         messages: [
             { role: "assistant", content: PROMPT },
             ...lastTwoMsg
         ],
       })
-      console.log(completion.choices[0].message)
+    //   console.log(completion.choices[0].message)
       return completion.choices[0].message
 }
 

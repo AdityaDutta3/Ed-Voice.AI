@@ -1,3 +1,4 @@
+import { UserContext } from "@/app/_context/UserContext";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +16,7 @@ import { useMutation } from "convex/react";
 import { Loader, LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 function UserInputDialog({ children, coachingOptions }) {
   const [selectedExpert, setSelectedExpert] = useState();
@@ -24,13 +25,16 @@ function UserInputDialog({ children, coachingOptions }) {
   const [loading,setLoading] =  useState(false)
   const [openDialog,setOpenDialog] = useState(false)
   const router = useRouter();
+  const {userData} = useContext(UserContext)
 
   const OnClickNext=async()=>{
     setLoading(true)
+    console.log(userData._id)
     const result = await createDiscussionRoom({
       topic:topic,
       coachingOption:coachingOptions?.name,
-      expertName:selectedExpert
+      expertName:selectedExpert,
+      uid: userData._id
     })
     console.log(result)
     setLoading(false)

@@ -24,7 +24,9 @@ function AuthProvider({ children }) {
 
   return (
     <div>
-      <UserContext.Provider value={{userData,setUserData}} >{children}</UserContext.Provider>
+      <UserContext.Provider value={{ userData, setUserData }}>
+                {children}
+            </UserContext.Provider>
     </div>
   );
 }

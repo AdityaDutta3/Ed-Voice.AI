@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { CoachingExpert } from "@/services/options";
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,12 @@ import {
 import { Loader2, Loader2Icon } from "lucide-react";
 import ChatBox from "./_components/ChatBox";
 import { UpdateConversation } from "@/convex/DiscussionRoom";
+import { UserContext } from "@/app/_context/UserContext";
+import Webcam from 'react-webcam';
 
 function DiscussionRoom() {
   const { roomid } = useParams();
+  const { userData, setUserData } = useContext(UserContext);
   const DiscussionRoomData = useQuery(api.DiscussionRoom.GetDiscussionRoom, {
     id: roomid,
   });
@@ -33,8 +36,18 @@ function DiscussionRoom() {
   const [audioURL, setAudioURL] = useState();
   const [enableFeedbackNotes, setEnableFeedbackNotes] = useState(false);
   let silenceTimeout;
+  let waitForPause;
   let texts = {};
   const UpdateConversation = useMutation(api.DiscussionRoom.UpdateConversation);
+  const updateUserToken = useMutation(api.users.UpdateUserToken);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(null);
+
+  useEffect(() => {
+    navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(() => setIsCameraEnabled(true))
+        .catch(() => setIsCameraEnabled(false));
+}, []);
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -66,7 +79,7 @@ function DiscussionRoom() {
             content: transcript.text,
           },
         ]);
-        // await updateUserTokenMathod(transcript.text);
+        await updateUserTokenMathod(transcript.text);
       }
 
       texts[transcript.audio_start] = transcript?.text;
@@ -133,6 +146,7 @@ function DiscussionRoom() {
   };
 
   useEffect(() => {
+    clearTimeout(waitForPause);
     async function fetchData() {
       if (conversation[conversation.length - 1]?.role == "user") {
         //Calling AI Model
@@ -150,10 +164,27 @@ function DiscussionRoom() {
         console.log(url);
         setAudioURL(url);
         setConversation((prev) => [...prev, aiResp]);
+        await updateUserTokenMathod(aiResp.content);
       }
     }
-    fetchData();
+    waitForPause = setTimeout(() => {
+      console.log("WAIT...");
+      fetchData();
+    }, 800);
   }, [conversation]);
+
+  const updateUserTokenMathod = async (text) => {
+    const tokenCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const result = await updateUserToken({
+      id: userData._id,
+      credits: Number(userData.credits) - Number(tokenCount),
+    });
+
+    setUserData((prev) => ({
+      ...prev,
+      credits: Number(userData.credits) - Number(tokenCount),
+    }));
+  };
 
   return (
     <div className="text-lg font-bold -mt-12">
@@ -170,9 +201,15 @@ function DiscussionRoom() {
             />
             <h2 className="text-gray-500">{expert?.name}</h2>
             <audio src={audioURL} type="audio/mp3" autoPlay />
-            <div className="p-5 bg-gray-200 px-10 rounded-lg absolute bottom-10 right-10">
-              <UserButton />
-            </div>
+            {!isCameraEnabled ? (
+              <div className="p-5 bg-gray-200 px-10 rounded-lg absolute bottom-10 right-10">
+                <UserButton />
+              </div>
+            ) : (
+              <div className="absolute bottom-10 right-10">
+                <Webcam height={80} width={130} className="rounded-2xl" />
+              </div>
+            )}
           </div>
           <div className="mt-5 flex justify-center items-center">
             {!enableMic ? (
