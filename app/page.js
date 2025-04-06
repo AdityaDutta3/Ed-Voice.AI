@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@stackframe/stack";
 import { useRouter } from "next/navigation";
+import AppHeader from "./(main)/_components/AppHeader";
 
 export default function Home() {
 
@@ -9,11 +10,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
-      {/* Header with Get Started Button */}
-      <header className="w-full max-w-4xl mx-auto mb-12 bg-red-50 shadow-md rounded-lg p-4">
-      </header>
+     <AppHeader/>
 
-      {/* Main Content */}
       <main className="w-full max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
         <section className="text-center mb-12">
           <h2 className="text-4xl sm:text-5xl font-bold text-black">
@@ -37,10 +35,6 @@ export default function Home() {
               Start Your Journey
             </Button>
           </div>
-        </section>
-
-        <section className="text-center mt-8">
-          <UserButton />
         </section>
       </main>
     </div>
