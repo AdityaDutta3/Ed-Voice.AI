@@ -11,11 +11,6 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
       {/* Header with Get Started Button */}
       <header className="w-full max-w-4xl mx-auto mb-12 bg-red-50 shadow-md rounded-lg p-4">
-        <div className="flex items-center">
-          <Button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-            Get Started
-          </Button>
-        </div>
       </header>
 
       {/* Main Content */}
